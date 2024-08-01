@@ -1,12 +1,13 @@
 pipeline {
 
-    agent { node { label 'maven' } }
+    agent { node { label "maven" } }
 
     options { skipDefaultCheckout true }
 
     stages {
         stage('Checkout') {
             steps {
+                sendNotification('started', 'team@example.com')
                 git branch: 'notifications',
                 url: 'https://github.com/david970828/DO400-apps'
             }
@@ -20,4 +21,15 @@ pipeline {
             }
         }
     }
+    post {
+        always {
+            sendNotification('finished', 'team@example.com')
+        }
+    }
+}
+
+void sendNotification(String action, String email) {
+    mail to: "${email}",
+        subject: "Pipeline ${action}: ${currentBuild.fullDisplayName}",
+        body: "The following pipeline ${action}: ${env.BUILD_URL}"
 }
